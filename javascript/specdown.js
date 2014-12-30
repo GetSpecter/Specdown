@@ -71,6 +71,7 @@ var specdown = {
             markdown = specdown.markup.metas(markdown);
             markdown = specdown.markup.blockquotes(markdown);
             markdown = specdown.markup.details(markdown);
+            markdown = specdown.markup.lists(markdown);
             return markdown;
         },
         
@@ -160,6 +161,14 @@ var specdown = {
             }
             // remove pad and return
             return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // - or + or * >> <ul></ul>
+        // #. >> <ol></ol>
+        // : >> <dl></dl>
+        lists: function(markdown) {
+            // TODO: everything
+            return markdown;
         }
         
     },
