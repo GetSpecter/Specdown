@@ -67,6 +67,7 @@ var specdown = {
         // markdown: required string
         all: function(markdown) {
             markdown = specdown.markup.escapedChars(markdown);
+            markdown = specdown.markup.comments(markdown);
             return markdown;
         },
         
@@ -74,6 +75,15 @@ var specdown = {
         escapedChars: function(markdown) {
             return markdown.replace(/\\([^A-Za-z0-9\s])/g, function(match, escapedChar) {
                 return '&#' + escapedChar.charCodeAt() + ';';
+            });
+        },
+        
+        // pair of three or more slashes >> nothing
+        // pair of three or more slashes with bang >> <!-- -->
+        comments: function(markdown) {
+            return markdown.replace(/(\/{3,})(?!\/)(!)?([\s\S]+?)\1(?!\/)/g, function(match, slashes, bang, content) {
+                if(bang) return '<!-- ' + content + ' -->';
+                return '';
             });
         }
         
