@@ -5,7 +5,7 @@
 Specdown combines the [original markdown specification](http://daringfireball.net/projects/markdown/) created by John Gruber, the latest and greatest flavors of markdown, various other lightweight markup languages, and new syntax for semantic notation and improved machine readability. Specdown seeks to provide the most complete set of syntax while considering both backward compatibility and future need. While Specdown may stray from full backward compatability, it is with the goal of improving speed, usability, and readability.
 
 
-Try the live demo at [http://mrkdwn.org](http://mrkdwn.org)
+Try the live demo at [http://specdown.org](http://specdown.org)
 
 ---
 
@@ -14,11 +14,6 @@ Table of Contents
 
 - [Syntax Cheatsheet](#syntax-cheatsheet)
 - [Syntax Details](#syntax-details)
-- [Javascript Implementation](#javascript-implementation)
-  - [NodeJS Usage](#nodejs-usage)
-  - [Web Usage](#web-usage)
-  - [Live Usage](#live-usage)
-  - [Javascript Implementation Status](#javascript-implementation-status)
 
 ---
 
@@ -28,7 +23,7 @@ Syntax Cheatsheet
 <table>
 <tr>
 <th>description</th>
-<th>mrkdwn</th>
+<th>specdown</th>
 </tr>
 
 <tr>
@@ -348,10 +343,10 @@ Syntax Details
 - [Classes](#classes)
 
 ### Escaped Characters
-- Any non whitespace special character can be escaped with `\` to markup the ascii representation and remove its mrkdwn meaning.
+- Any non whitespace special character can be escaped with `\` to markup the ascii representation and remove its Specdown meaning.
 - Applied to escaped characters anywhere, without exception. Including pre and comments.
 
-###### mrkdwn
+###### specdown
 ```
 \*Actual asterisk surrounded text\*
 ```
@@ -369,7 +364,7 @@ Syntax Details
 - Pairs of n or more `/` can be used to comment n or less `/`.
 - Applied anywhere, without exception. Including pre.
 
-###### mrkdwn
+###### specdown
 ```
 Hide /// the comment /// from this sentence.
 
@@ -407,7 +402,7 @@ Comment out three  slashes
 - A blank line is a line that appears to be blank. This includes lines with no characters, lines with only spaces and tabs, and the start and end of a file.
 - Note: diverges from daringfireball by not allowing "hard-wrapped" text paragraphs.
 
-###### mrkdwn
+###### specdown
 ```
 The first paragraph
 
@@ -436,7 +431,7 @@ with a manual break inserted
 - Opening phrase formatting proceeded by whitespace and closing phrase formatting preceeded by whitespace will not be translated as phrase formatting.
 - Note: diverges almost completely from daringfireball.
 
-###### mrkdwn
+###### specdown
 ```
 *bold*  **strong**  ***emphasis***
 ~italic~  ~~strikethrough~~  ~~~mark~~~~
@@ -468,7 +463,7 @@ put a * in the **
 - Headers with identical header text will be given unique numbered anchors based on header text.
 - Note: diverges from daringfireball by not markuping trailing `#`.
 
-###### mrkdwn
+###### specdown
 ```
 Header 1
 ========
@@ -510,7 +505,7 @@ Header 2
 - Three or more `-` or `*` on a line, alone, will create a horizontal rule. 
 - Note: diverges from daringfireball by not allowing `-` and `*` to be seperated by spaces.
 
-###### mrkdwn
+###### specdown
 ```
 ---
 
@@ -548,7 +543,7 @@ Header 2
 - Blockquotes can be nested a max of 10 times.
 - Note: diverges from daringfireball by requiring that all lines of a blockquote begin with `>`.
 
-###### mrkdwn
+###### specdown
 ```
 > Paragraph one
 > 
@@ -635,7 +630,7 @@ block quote
 - One are more blank lines between details lines will markup the lines as difference details.
 - Detail blocks can be nested up to 10 times and can contain any other syntax.
 
-###### mrkdwn
+###### specdown
 ```
 <! summary
 < Paragaph One
@@ -674,7 +669,7 @@ Paragraph One
 - `<class>` is markuped on the li and cannot be used with `<<class>`.
 - `<<class>` is markuped on the ul and can only be used on the first list item.
 
-###### mrkdwn
+###### specdown
 ```
 - Item
 - Item
@@ -738,7 +733,7 @@ With a second paragraph
 - `<class>` is markuped on the li and cannot be used with `<<class>`.
 - `<<class>` is markuped on the ol and can only be used on the first list item.
 
-###### mrkdwn
+###### specdown
 ```
 1. One
 2. Two
@@ -782,7 +777,7 @@ With a second paragraph
 - Task lists can be used with any list type and can be used with nested lists.
 - Task lists use checkbox type input tags, and require CSS for correct visual display.
 
-###### mrkdwn
+###### specdown
 ```
 - [ ] Task 1
 - [x] Task 2
@@ -817,7 +812,7 @@ With a second paragraph
 - `<class>` is markuped on the dt or dd and cannot be used with `<<class>`.
 - `<<class>` is markuped on the dl and can only be used on the first list item.
 
-###### mrkdwn
+###### specdown
 ```
 : Term One
 :: Definition
@@ -862,7 +857,7 @@ Definition One
 ### Nested Lists
 - All list types may be nested in each other.
 
-###### mrkdwn
+###### specdown
 ```
 - Item
 - 1. One
@@ -917,7 +912,7 @@ Definition One
 - Note: diverges from daringfireball by not allowing multi-line references.
 - Note: diverges from daringfireball by using `[[]]` instead of `<>` for automatic links.
 
-###### mrkdwn
+###### specdown
 ```
 [text](url)
 [text](url "Title")
@@ -969,7 +964,7 @@ Definition One
 - Urls are automatically url encoded.
 - Emails are automatically ascii decimal encoded.
 
-###### mrkdwn
+###### specdown
 ```
 Go to index.html
 Go to http://url.com
@@ -992,7 +987,7 @@ Email <a href="mailto:&#97;&#100;&#100;&#114;&#64;&#101;&#109;&#97;&#105;&#108;&
 - title, width, and height are optional.
 - Usage of an undefined imageReference will be markuped to img tags with only alt text.
 
-###### mrkdwn
+###### specdown
 ```
 ![alt text](url title)
 ![alt text](url "Title" 350px 100%)
@@ -1029,7 +1024,7 @@ Email <a href="mailto:&#97;&#100;&#100;&#114;&#64;&#101;&#109;&#97;&#105;&#108;&
 - Any number and type of arguments can be included after the first argument depending on the macro.
 - Macros do not support class syntax.
 
-###### mrkdwn
+###### specdown
 ```
 %[alt text](macro arg1 arg2 arg3 ...)
 
@@ -1059,7 +1054,7 @@ varied based on macro
 - If the first argument in a citation reference is a known type of citation its arguments will be used to autoformat a citation in MLA. 
 - If the first argument is not a known citation type, the string will be used directly.
 
-###### mrkdwn
+###### specdown
 ```
 This sentence is from something trustworthy @[refOne]. 
 This sentence is way less trustworthy @refTwo.
@@ -1093,7 +1088,7 @@ Yeah for classes<sup class="citation class-one class-two"><a href="#cite-1" titl
 - Note references list is given a `notes` class.
 - Note sup tags are given a `note` class.
 
-###### mrkdwn
+###### specdown
 ```
 This sentence needs a note &[refOne]. 
 This sentence also needs a note &refTwo. 
@@ -1123,7 +1118,7 @@ This sentence gets a fancy note<sup class="note class-one"><a href="#note-2" tit
 - Variable definitions are case sensative.
 - Duplicate variable definitions will overwrite previous values.
 
-###### mrkdwn
+###### specdown
 ```
 Current version $[variable]
 Current version $variable
@@ -1144,7 +1139,7 @@ Current version value
 - Abbreviation definitions are case sensative and can contain multiple words and spaces.
 - Duplicate abbreviation definitions will overwrite previous values.
 
-###### mrkdwn
+###### specdown
 ```
 The HTML specification
 The Primary Standard is good
@@ -1165,7 +1160,7 @@ The <abbr title="Main Standard">Primary Standard</abbr> is good
 - All special characters are markuped to their ascii representation.
 - Must contain at least one whitespace or non backtick character.
 
-###### mrkdwn
+###### specdown
 ```
 The `<body></body>` tags
 Encase `` `ticks` ``
@@ -1183,7 +1178,7 @@ Encase <code> &#96;ticks&#96; </code>
 - All special characters are markuped to their ascii representation.
 - Text on the same line as the opening backticks will be markuped as class on the code tag.
 
-###### mrkdwn
+###### specdown
 ```
 '''
 <body></body>
@@ -1211,7 +1206,7 @@ Encase <code> &#96;ticks&#96; </code>
 - All special characters are markuped to their ascii representation.
 - Must contain at least one whitespace or non backtick character.
 
-###### mrkdwn
+###### specdown
 ```
 The `!<body></body>` tags
 Encase ``! `ticks` ``
@@ -1229,7 +1224,7 @@ Encase <samp> &#96;ticks&#96; </samp>
 - All special characters are markuped to their ascii representation.
 - Text on the same line as the opening backticks will be markuped as class on the samp tag.
 
-###### mrkdwn
+###### specdown
 ```
 '''!
 > Output from a bash script
@@ -1263,7 +1258,7 @@ sample output
 - `<class>` is markuped on the tr and cannot be used with `<<class>`.
 - `<<class>` is markuped on the table and can only be used on the head row.
 
-###### mrkdwn
+###### specdown
 ```
 | Header One | Header Two |<<class-one>
 | ---------- | ---------- |
@@ -1320,7 +1315,7 @@ sample output
   - `[ ]` can be used to define a json-ish data structure. 
   - Whitespace is used for parsing and is otherwise ignored.
 
-###### mrkdwn
+###### specdown
 ```
 {{{ pageTitle "The page title" }}}
 {{{ author (
@@ -1354,7 +1349,7 @@ sample output
 - Spans can be used within words.
 - Spans are primarily used with class syntax.
 
-###### mrkdwn
+###### specdown
 ```
 Put a span [around this text].
 
@@ -1372,7 +1367,7 @@ something<span class="class">SpannedUp</span>.
 - `<class>` can be added to any other syntax to add a css class to its markup.
 - Classes can define more than one class.
 
-###### mrkdwn
+###### specdown
 ```
 #<class> Header
 
