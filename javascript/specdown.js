@@ -68,10 +68,11 @@ var specdown = {
         all: function(markdown) {
             markdown = specdown.markup.escapedChars(markdown);
             markdown = specdown.markup.comments(markdown);
+            markdown = specdown.markup.metas(markdown);
             return markdown;
         },
         
-        // escaped non whitespace or alphanumeric chars -> ascii html encoding
+        // escaped non whitespace or alphanumeric chars >> ascii html encoding
         escapedChars: function(markdown) {
             return markdown.replace(/\\([^A-Za-z0-9\s])/g, function(match, escapedChar) {
                 return '&#' + escapedChar.charCodeAt() + ';';
@@ -82,6 +83,15 @@ var specdown = {
         // pair of three or more slashes with bang >> <!-- -->
         comments: function(markdown) {
             return markdown.replace(/(\/{3,})(?!\/)(!)?([\s\S]+?)\1(?!\/)/g, function(match, slashes, bang, content) {
+                if(bang) return '<!-- ' + content + ' -->';
+                return '';
+            });
+        },
+        
+        // three curly brackets >> nothing
+        // three curly brackets with ! >> <!-- -->
+        metas: function(markdown) {
+            return markdown.replace(/\{\{\{(!)?([\s\S]*?)\}\}\}/g, function(match, bang, content) {
                 if(bang) return '<!-- ' + content + ' -->';
                 return '';
             });
