@@ -66,7 +66,15 @@ var specdown = {
         
         // markdown: required string
         all: function(markdown) {
+            markdown = specdown.markup.escapedChars(markdown);
             return markdown;
+        },
+        
+        // escaped non whitespace or alphanumeric chars -> ascii html encoding
+        escapedChars: function(markdown) {
+            return markdown.replace(/\\([^A-Za-z0-9\s])/g, function(match, escapedChar) {
+                return '&#' + escapedChar.charCodeAt() + ';';
+            });
         }
         
     },
