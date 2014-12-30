@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specdown | js demo</title>
+    <script type="text/javascript" src="specdown.js"></script>
+    <style type="text/css">
+        html, body {
+            margin:0px; width:100%; height:100% !important;
+            height:auto; min-height:100%;
+        }
+        .io, .io fieldset, .io legend, .io textarea, .io input, .io #preview {
+            -webkit-box-sizing:border-box; -moz-box-sizing:border-box; box-sizing:border-box;
+            -webkit-background-clip:padding; -moz-background-clip:padding; background-clip:padding-box;
+        }
+        .io {
+            position:relative; margin:0px; width:100%;
+            height:100%; padding:25px 25px 25px 25px;
+        }
+        .io fieldset {
+            position:relative; float:left; margin:0px;
+            width:33%; height:100%; padding:0px 0px 20px 0px;
+        } 
+        .io legend {
+            position:relative; margin:0px 15px;
+            padding:0px 5px;
+        }
+        .io textarea, .io #preview {
+            position:relative; margin:0px; width:100%; height:100%; padding:15px;
+            font-family:monospace; border:none; outline:none; overflow:auto;
+        }
+        .io input {
+            position:relative; float:right; margin:10px 15px; width:auto; height:auto; 
+            padding:5px 10px; color:#333; background-color:#CCC; border:1px solid #999; 
+            -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px;
+        }
+        .io input:hover {
+            color:#CCC; background-color:#333;
+        }
+    </style>
+</head>
+<body>
+    
+    <form class="io" onsubmit="return false;">
+        <fieldset>
+            <legend id="markdown-legend">markdown</legend>
+            <textarea id="markdown"></textarea>
+        </fieldset>
+        <fieldset>
+            <legend id="markup-legend">markup</legend>
+            <textarea id="markup" disabled></textarea>
+        </fieldset>
+        <fieldset>
+            <legend id="preview-legend">preview</legend>
+            <div id="preview"></div>
+        </fieldset>
+    </form>
+    
+    <script type="text/javascript">
+        // common elements
+        var markdown = document.getElementById('markdown'),
+            markup = document.getElementById('markup'),
+            preview = document.getElementById('preview'),
+            storageKey = 'org.specdown.demo.markdown';
+        // set the markdown to the stored markdown value
+        markdown.value = localStorage.getItem(storageKey);
+        // on page reload or close store the markdown value, also disables alert
+        window.onbeforeunload = function(){
+            localStorage.setItem(storageKey, markdown.value);
+        };
+        // start live markup
+        specdown.markup.live('markdown', 'markup', 'preview');
+    </script>
+    
+</body>
+</html>
