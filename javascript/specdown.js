@@ -73,6 +73,7 @@ var specdown = {
             markdown = specdown.markup.details(markdown);
             markdown = specdown.markup.lists(markdown);
             markdown = specdown.markup.tables(markdown);
+            markdown = specdown.markup.codesSamples(markdown);
             return markdown;
         },
         
@@ -252,6 +253,34 @@ var specdown = {
             markdown = markdown.replace(/\n<\/tbody>\n<tbody.*?>\n/g, '\n');
             // remove pad and return
             return markdown.substring(1, markdown.length - 2);
+        },
+        
+        // pair of one or more backticks on a line >> <code></code>
+        // pair of one or more backticks with ! on a line >> <samp></samp>
+        // pair of three or more backticks on multiple lines >> <pre><code></code></pre>
+        // pair of three or more backticks with ! on multiple lines >> <pre><samp></samp></pre>
+        codesSamples: function(markdown) {
+            // pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // ascii encode all special characters
+            var asciiEncode = function(str) {
+                return str.replace(/([^\w\s])/g, function(match, specialChar) {
+                    return '&#' + specialChar.charCodeAt() + ';';
+                });
+            };
+            // find, replace inline
+            markdown = markdown.replace(/(`{1,})(?!`)(!)?(.+?)\1(?!`)/g, function(match, ticks, bang, content) {
+                if(bang) return '<samp>' + asciiEncode(content) + '</samp>'
+                return '<code>' + asciiEncode(content) + '</code>'
+            });
+            // find, replace block
+            markdown = markdown.replace(/\n(`{3,})(?!`)(!)?(.*?|)\n([\s\S]*?)\1(?!`)/g, function(match, ticks, bang, syntax, content) {
+                syntax = (syntax.trim()) ? ' class="' + syntax.trim() + '"' : '';
+                if(bang) return '\n<pre><samp' + syntax + '>\n' + asciiEncode(content)  + '</samp></pre>'
+                return '\n<pre><code' + syntax + '>\n' + asciiEncode(content)  + '</code></pre>'
+            });
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
         }
         
     },
