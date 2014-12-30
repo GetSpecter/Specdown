@@ -69,6 +69,8 @@ var specdown = {
             markdown = specdown.markup.escapedChars(markdown);
             markdown = specdown.markup.comments(markdown);
             markdown = specdown.markup.metas(markdown);
+            markdown = specdown.markup.blockquotes(markdown);
+            markdown = specdown.markup.details(markdown);
             return markdown;
         },
         
@@ -95,6 +97,69 @@ var specdown = {
                 if(bang) return '<!-- ' + content + ' -->';
                 return '';
             });
+        },
+        
+        // > >> blockquote
+        blockquotes: function(markdown) {
+            // buildTag is recursivelly called
+            var maxNest = 10, 
+                buildTag = function(match, ender, cite, clss, content) {
+                    ender = (ender) ? '<!-- -->' : '';
+                    cite = (cite) ? ' cite="' + content + '"' : '';
+                    clss = (clss) ? ' class="' + clss + '"' : '';
+                    // if the blockquote content contains another valid blockquote syntax, recall buildTag on it
+                    // nests blockquotes inside of each other
+                    if(!cite && content.search(/^\>(.*)/g) > -1) {
+                        content = content.replace(/\>(\>?)(\!?)(?:\<(.*)?\>)? (.*)/g, buildTag);
+                    }
+                    // return the whole mess back up 
+                    // main diffence between returns is to not include a newline with cite
+                    if(cite) return '<blockquote' + clss + cite + '>\n</blockquote>' + ender;
+                    return '<blockquote' + clss + '>\n' + content + '\n</blockquote>' + ender;
+                };
+            // add pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // find all of the first level >, optionally match first level >>, optionally match ! cite
+            markdown = markdown.replace(/\n\>(\>?)(\!?)(?:\<(.*)?\>)? (.*)/g, function(match, ender, cite, clss, content) {
+                return '\n' + buildTag(match, ender, cite, clss, content);
+            });
+            // as long as the extra (incorrect) ending and starting blockquote tags are found, remove them
+            while(markdown.search(/<\/blockquote>(\s{0,1})<blockquote.*?>/g) > -1 && maxNest--) {
+                markdown = markdown.replace(/\n<\/blockquote>(\s{0,1})<blockquote.*?>\n/g, '$1');
+            }
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // < >> details
+        details: function(markdown) {
+            // buildTag is recursivelly called
+            var maxNest = 10, 
+                buildTag = function(match, ender, summary, clss, content) {
+                    ender = (ender) ? '<!-- -->' : '';
+                    summary = (summary) ? '<summary>' + content + '</summary>' : '';
+                    clss = (clss) ? ' class="' + clss + '"' : '';
+                    // if the content contains another valid details syntax, recall buildTag on it
+                    // nests details inside of each other
+                    if(!summary && content.search(/^\<(.*)/g) > -1) {
+                        content = content.replace(/\<(\<?)(\!?)(?:\<(.*)?\>)? (.*)/g, buildTag);
+                    }
+                    // return the whole mess back up
+                    if(summary) return '<details' + clss + '>\n' + summary + '\n</details>' + ender;
+                    return '<details' + clss + '>\n' + content + '\n</details>' + ender;
+                };
+            // add pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // find all of the first level <, optionally match first level <<, optionally match ! summary
+            markdown = markdown.replace(/\n\<(\<?)(\!?)(?:\<(.*)?\>)? (.*)/g, function(match, ender, summary, clss, content) {
+                return '\n' + buildTag(match, ender, summary, clss, content);
+            });
+            // as long as the extra (incorrect) ending and starting details tags are found, remove them
+            while(markdown.search(/<\/details>(\s{0,1})<details.*?>/g) > -1 && maxNest--) {
+                markdown = markdown.replace(/\n<\/details>(\s{0,1})<details.*?>\n/g, '$1');
+            }
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
         }
         
     },
