@@ -84,6 +84,7 @@ var specdown = {
             markdown = specdown.markup.headers(markdown);
             markdown = specdown.markup.horizontalRules(markdown);
             markdown = specdown.markup.phraseFormattings(markdown);
+            markdown = specdown.markup.spans(markdown);
             return markdown;
         },
         
@@ -645,6 +646,15 @@ var specdown = {
             markdown = markdown.replace(/\b_([^\s_].*?[^\s_])_\b/g, "<u>$1</u>");
             //
             return markdown;
+        },
+        
+        // [] >> <span></span>
+        spans: function(markdown) {
+            // find, replace spans
+            return markdown.replace(/\[([^\]]+?)\](?:<(.*?)>)?/g, function(match, content, clss) {
+                clss = (clss) ? ' class="' + clss + '"' : '';
+                return '<span' + clss + '>' + content + '</span>';
+            });
         }
         
     },
