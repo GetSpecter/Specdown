@@ -33,7 +33,8 @@ var specdown = {
      * specify behavior
     */
     config: {
-        strict: false
+        strict: false,
+        minimized: true
     },
     
     /*
@@ -86,6 +87,7 @@ var specdown = {
             markdown = specdown.markup.phraseFormattings(markdown);
             markdown = specdown.markup.spans(markdown);
             markdown = specdown.markup.paragraphs(markdown);
+            if(specdown.config.minimized) markdown = specdown.util.minimize(markdown);
             return markdown;
         },
         
@@ -733,6 +735,11 @@ var specdown = {
         // tokenize based on white space and quotations
         tokenize: function(str) {
             return str.match(/(?=""|'')|[^"']*\w(?="|')|[^"' ]+/g);
+        },
+        
+        // remove newlines and excess whitespace
+        minimize: function(str) {
+            return str.replace(/\n/g, '');
         }
         
     },

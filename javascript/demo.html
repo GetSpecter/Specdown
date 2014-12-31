@@ -68,6 +68,7 @@
             localStorage.setItem(storageKey, markdown.value);
         };
         // start live markup
+        specdown.config.minimized = false;
         specdown.markup.live('markdown', 'markup', 'preview');
     </script>
     
