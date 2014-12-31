@@ -80,6 +80,7 @@ var specdown = {
             markdown = specdown.markup.macros(markdown);
             markdown = specdown.markup.citations(markdown);
             markdown = specdown.markup.notes(markdown);
+            markdown = specdown.markup.links(markdown);
             return markdown;
         },
         
@@ -469,6 +470,80 @@ var specdown = {
             markdown = markdown.replace(/\s\&(\w\S+?)\b/g, function(match, name) {
                 return buildTags(match, name, '');
             });
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // square brackets colon >> nothing
+        // square brackets square brackets >> <a></a>
+        // square brackets round brackets >> <a></a>
+        // single or double square brackets >> <a></a>
+        links: function(markdown, runtimeDefinitions, disableAutoLinks) {
+            var defs = (runtimeDefinitions) ? runtimeDefinitions : {},
+                buildTag = function(text, value, clss) {
+                    // if no value, return unaltered text
+                    if(!value) return text;
+                    // if value, split it into tokens and return tag
+                    var tokens = specdown.util.tokenize(value),
+                        url, email, name, title;
+                    //
+                    url = email = name = '';
+                    if(tokens[0].charAt(0) === '!') {
+                        name = ' name="' + tokens[0].substring(1) + '"';
+                    } else if(tokens[0].indexOf('@') > 0) {
+                        email = ' href="mailto:' + specdown.util.asciiEncode(tokens[0], /(\S)/g) + '"';
+                        text = specdown.util.asciiEncode(tokens[0], /(\S)/g);
+                    } else {
+                        url = ' href="' + encodeURI(tokens[0]) + '"';
+                    }
+                    //
+                    if(tokens[1]) {
+                        title = ' title="' + specdown.util.asciiEncode(tokens[1]) + '"';
+                    } else {
+                        title = ' title="' + specdown.util.asciiEncode(text) + '"';
+                    }
+                    //
+                    clss = (clss) ? ' class="' + clss + '"' : '';
+                    //
+                    return '<a' + clss + url + email + name + title + '>' + text + '</a>';
+                };
+            // add pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // find, cache, remove definitions
+            markdown = markdown.replace(/\n\[(.*?)\]:(.*)/g, function(match, name, value) {
+                defs[name] = value;
+                return '';
+            });
+            // find, replace reference usage
+            markdown = markdown.replace(/(\s)\[(.*?)\]\[(.*?)\](?:\<(.*)?\>)?/g, function(match, whitespace, text, name, clss) {
+                if(!name) return whitespace + buildTag(text, defs[text], clss);
+                return whitespace + buildTag(text, defs[name], clss);
+            });
+            // find, replace inline usage
+            markdown = markdown.replace(/(\s)\[(.*?)\]\((.*?)\)(?:\<(.*)?\>)?/g, function(match, whitespace, text, value, clss) {
+                return whitespace + buildTag(text, value, clss);
+            });
+            // find, replace simple usage
+            markdown = markdown.replace(/(\s)\[\[([^\[\]]*?\S[^\[\]]*?)\]\](?:\<(.*)?\>)?(?=\s)/g, function(match, whitespace, text, clss) {
+                return whitespace + buildTag(text.replace(/^[!#]/, ''), text, clss);
+            });
+            // find, replace simple parsed usage
+            markdown = markdown.replace(/(\s)\[\[\[([^\[\]]*?\S[^\[\]]*?)\]\]\](?:\<(.*)?\>)?(?=\s)/g, function(match, whitespace, text, clss) {
+                var shown = text.replace(/^[!#]|["']/g, '').replace(/[_#]/g, ' '),
+                    value = text.replace(/_/g, '/');
+                return whitespace + buildTag(shown, value, clss);
+            });
+            // find, replace absolute urls and email address
+            if(!disableAutoLinks) {
+                // find, replace absolute links
+                markdown = markdown.replace(/(\s)(http[s]?:\/\/\S+?\.\S+?)\b/g, function(match, whitespace, url) {
+                    return whitespace + buildTag(url, url);
+                });
+                // find, replace email addresses
+                markdown = markdown.replace(/(\s)([^\s"\(\),:;<>@\[\]\\]+?\@\S+?\.\S+?)\b/g, function(match, whitespace, email) {
+                    return whitespace + buildTag(email, email);
+                });
+            }
             // remove pad and return
             return markdown.substring(1, markdown.length - 1);
         }
