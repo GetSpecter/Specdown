@@ -79,6 +79,7 @@ var specdown = {
             markdown = specdown.markup.images(markdown);
             markdown = specdown.markup.macros(markdown);
             markdown = specdown.markup.citations(markdown);
+            markdown = specdown.markup.notes(markdown);
             return markdown;
         },
         
@@ -432,6 +433,40 @@ var specdown = {
                 return buildTags(match, name, clss);
             });
             markdown = markdown.replace(/\s\@(\w\S+?)\b/g, function(match, name) {
+                return buildTags(match, name, '');
+            });
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // amp square brackets colon >> note list
+        // amp square brackets >> <sup><a></a></sup>
+        // amp text >> <sup><a></a></sup>
+        notes: function(markdown, linkPrefix) {
+            var linkPrefix = (linkPrefix) ? linkPrefix : 'note-',
+                defCount = 0, defs = {},
+                buildTags = function(altText, name, clss) {
+                    if(defs[name]) {
+                        clss = (clss) ? ' class="note ' + clss + '"' : ' class="note"';
+                        return '<sup' + clss + '><a href="#' + linkPrefix + defs[name].id + '" title="' + 
+                            specdown.util.asciiEncode(defs[name].note) + '">' + defs[name].id + '</a></sup>';
+                    }
+                    return altText;
+                };
+            // pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // find, cache, create list
+            markdown = markdown.replace(/\n\&\[(.*?)\]:(.*)/g, function(match, name, value) {
+                defs[name] = {id: ++defCount, note: value};
+                return '\n<ol class="notes">\n<li><a name="' + linkPrefix + defCount + '">' + value.trim() + '</a></li>\n</ol>';
+            });
+            // clean up list
+            markdown = markdown.replace(/\n<\/ol>\n<ol.*?>/g, '');
+            // find, replace inline usage
+            markdown = markdown.replace(/\s\&\[(.*?)\](?:\<(.*)?\>)?/g, function(match, name, clss) {
+                return buildTags(match, name, clss);
+            });
+            markdown = markdown.replace(/\s\&(\w\S+?)\b/g, function(match, name) {
                 return buildTags(match, name, '');
             });
             // remove pad and return
