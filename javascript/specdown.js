@@ -74,6 +74,7 @@ var specdown = {
             markdown = specdown.markup.lists(markdown);
             markdown = specdown.markup.tables(markdown);
             markdown = specdown.markup.codesSamples(markdown);
+            markdown = specdown.markup.variables(markdown);
             return markdown;
         },
         
@@ -281,6 +282,27 @@ var specdown = {
             });
             // remove pad and return
             return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // dollar square brackets colon >> nothing
+        // dollar square brackets >> text
+        variables: function(markdown, runtimeDefinitions) {
+            var defs = (runtimeDefinitions) ? runtimeDefinitions : {};
+            // find, cache, remove definitions
+            markdown = markdown.replace(/\$\[(.*?)\]:(.*)(\n)?/g, function(match, name, value) {
+                defs[name] = value.trim();
+                return '';
+            });
+            // find, replace usage
+            markdown = markdown.replace(/\$\[(.*?)\]/g, function(match, name) {
+                return (defs[name]) ? defs[name] : name;
+            });
+            // find, replace short usage
+            markdown = markdown.replace(/\$(\w\S+?)\b/g, function(match, name) {
+                return (defs[name]) ? defs[name] : match;
+            });
+            //
+            return markdown;
         }
         
     },
