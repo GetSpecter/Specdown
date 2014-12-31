@@ -78,6 +78,7 @@ var specdown = {
             markdown = specdown.markup.abbreviations(markdown);
             markdown = specdown.markup.images(markdown);
             markdown = specdown.markup.macros(markdown);
+            markdown = specdown.markup.citations(markdown);
             return markdown;
         },
         
@@ -394,6 +395,47 @@ var specdown = {
             });
             //
             return markdown;
+        },
+        
+        // at square brackets colon >> citation list
+        // at square brackets >> <sup><a></a></sup>
+        // at text >> <sup><a></a></sup>
+        citations: function(markdown, linkPrefix) {
+            var linkPrefix = (linkPrefix) ? linkPrefix : 'cite-',
+                defCount = 0, defs = {},
+                buildTags = function(altText, name, clss) {
+                    if(defs[name]) {
+                        clss = (clss) ? ' class="citation ' + clss + '"' : ' class="citation"';
+                        return '<sup' + clss + '><a href="#' + linkPrefix + defs[name].id + '" title="' + 
+                            specdown.util.asciiEncode(defs[name].bib) + '">' + defs[name].id + '</a></sup>';
+                    }
+                    return altText;
+                };
+            // pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // find, cache, create list
+            markdown = markdown.replace(/\n\@\[(.*?)\]:(.*)/g, function(match, name, value) {
+                var tokens = specdown.util.tokenize(value),
+                    type = tokens.shift(), bib;
+                if(specdown.citation[type]) {
+                    bib = specdown.citation[type].apply(null, tokens);
+                } else {
+                    bib = value.trim();
+                }
+                defs[name] = {id: ++defCount, bib: bib};
+                return '\n<ol class="citations">\n<li><a name="' + linkPrefix + defCount + '">' + bib + '</a></li>\n</ol>';
+            });
+            // clean up list
+            markdown = markdown.replace(/\n<\/ol>\n<ol.*?>/g, '');
+            // find, replace inline usage
+            markdown = markdown.replace(/\s\@\[(.*?)\](?:\<(.*)?\>)?/g, function(match, name, clss) {
+                return buildTags(match, name, clss);
+            });
+            markdown = markdown.replace(/\s\@(\w\S+?)\b/g, function(match, name) {
+                return buildTags(match, name, '');
+            });
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
         }
         
     },
@@ -473,6 +515,23 @@ var specdown = {
             width = (width) ? ' width="' + width + '"' : '';
             height = (height) ? ' height="' + height + '"' : '';
             return '<iframe src="http://www.youtube.com/embed/' + videoId + '"' + width + height + ' frameborder="0" allowfullscreen></iframe>';
+        }
+        
+    },
+    
+    /*
+     * factories for citation markup
+    */
+    citation: {
+        
+        // citation for a website
+        web: function(url, accessDate, pageTitle, websiteTitle, author) {
+            author = (author) ? author + '. ' : '';
+            pageTitle = (pageTitle) ? '"' + pageTitle + '." ' : '';
+            websiteTitle = (websiteTitle) ? '<i>' + websiteTitle + '.</i> ' : '';
+            accessDate = (accessDate) ? accessDate + '. ' : '';
+            url = (url) ? '<br /><<a href="' + url + '">' + url + '</a>>.' : '';
+            return author + pageTitle + websiteTitle + accessDate + url;
         }
         
     }
