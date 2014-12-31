@@ -77,6 +77,7 @@ var specdown = {
             markdown = specdown.markup.variables(markdown);
             markdown = specdown.markup.abbreviations(markdown);
             markdown = specdown.markup.images(markdown);
+            markdown = specdown.markup.macros(markdown);
             return markdown;
         },
         
@@ -359,6 +360,40 @@ var specdown = {
             });
             //
             return markdown;
+        },
+        
+        // percent square brackets colon >> nothing
+        // percent square brackets square brackets >> macro dependent
+        // percent square brackets round brackets >> macro dependent
+        macros: function(markdown, runtimeDefinitions) {
+            var defs = (runtimeDefinitions) ? runtimeDefinitions : {},
+                runMacro = function(altText, value) {
+                    // if no value, return alt text
+                    if(!value) return altText;
+                    // if value, split it into tokens
+                    var tokens = specdown.util.tokenize(value),
+                        macro = tokens.shift();
+                    // if invalid macro, return alt text
+                    if(!specdown.macro[macro]) return altText;
+                    // if valid macro, return its output
+                    return specdown.macro[macro].apply(null, tokens);
+                };
+            // find, cache, remove definitions
+            markdown = markdown.replace(/\%\[(.*?)\]:(.*)(\n)?/g, function(match, name, value) {
+                defs[name] = value;
+                return '';
+            });
+            // find, replace reference usage
+            markdown = markdown.replace(/\%\[(.*?)\]\[(.*?)\]/g, function(match, altText, name) {
+                if(!name) return runMacro(altText, defs[altText]);
+                return runMacro(altText, defs[name]);
+            });
+            // find, replace inline usage
+            markdown = markdown.replace(/\%\[(.*?)\]\((.*?)\)/g, function(match, altText, value) {
+                return runMacro(altText, value);
+            });
+            //
+            return markdown;
         }
         
     },
@@ -400,7 +435,7 @@ var specdown = {
     
     /*
      * common functionality
-     */
+    */
     util: {
         
         // ascii encode all characters matched by the regex
@@ -414,6 +449,30 @@ var specdown = {
         // tokenize based on white space and quotations
         tokenize: function(str) {
             return str.match(/(?=""|'')|[^"']*\w(?="|')|[^"' ]+/g);
+        }
+        
+    },
+    
+    /*
+     * factories for macro markup
+    */
+    macro: {
+        
+        // get the CSV of the arguments
+        csv: function() {
+            var i, str = '';
+            for(i=0; i<arguments.length; i++) {
+                str += ',' + arguments[i];
+            }
+            return str.substring(1);
+        },
+        
+        // embed youtube video
+        youtube: function(videoId, width, height) {
+            if(!videoId) return '';
+            width = (width) ? ' width="' + width + '"' : '';
+            height = (height) ? ' height="' + height + '"' : '';
+            return '<iframe src="http://www.youtube.com/embed/' + videoId + '"' + width + height + ' frameborder="0" allowfullscreen></iframe>';
         }
         
     }
