@@ -76,6 +76,7 @@ var specdown = {
             markdown = specdown.markup.codesSamples(markdown);
             markdown = specdown.markup.variables(markdown);
             markdown = specdown.markup.abbreviations(markdown);
+            markdown = specdown.markup.images(markdown);
             return markdown;
         },
         
@@ -320,6 +321,43 @@ var specdown = {
                 markdown = markdown.replace(new RegExp('\\b' + def + '\\b', 'g'), 
                     '<abbr title="' + specdown.util.asciiEncode(defs[def]) + '">' + def + '</abbr>');
             }
+            return markdown;
+        },
+        
+        // bang square brackets colon >> nothing
+        // bang square brackets square brackets >> <img />
+        // bang square brackets round brackets >> <img />
+        images: function(markdown, runtimeDefinitions) {
+            var defs = (runtimeDefinitions) ? runtimeDefinitions : {},
+                buildTag = function(altText, value, clss) {
+                    // if no value, return empty-ish tag
+                    if(!value) return '<img alt="' + altText + '" />';
+                    // if value, return fully formed tag as possible
+                    var alt, src, title, clss, width, height,
+                        tokens = specdown.util.tokenize(value);
+                    alt = ' alt="' + altText + '"';
+                    src = (tokens[0]) ? ' src="' + tokens[0] + '"' : '';
+                    title = (tokens[1]) ? ' title="' + tokens[1] + '"' : '';
+                    width = (tokens[2]) ? ' width="' + tokens[2] + '"' : '';
+                    height = (tokens[3]) ? ' height="' + tokens[3] + '"' : '';
+                    clss = (clss) ? ' class="' + clss + '"' : '';
+                    return '<img' + alt + src + clss + title + width + height + ' />';
+                };
+            // find, cache, remove definitions
+            markdown = markdown.replace(/\!\[(.*?)\]:(.*)(\n)?/g, function(match, name, value) {
+                defs[name] = value;
+                return '';
+            });
+            // find, replace reference usage
+            markdown = markdown.replace(/\!\[(.*?)\]\[(.*?)\](?:\<(.*)?\>)?/g, function(match, altText, name, clss) {
+                if(!name) return buildTag(altText, defs[altText], clss);
+                return buildTag(altText, defs[name], clss);
+            });
+            // find, replace inline usage
+            markdown = markdown.replace(/\!\[(.*?)\]\((.*?)\)(?:\<(.*)?\>)?/g, function(match, altText, value, clss) {
+                return buildTag(altText, value, clss);
+            });
+            //
             return markdown;
         }
         
