@@ -82,6 +82,7 @@ var specdown = {
             markdown = specdown.markup.notes(markdown);
             markdown = specdown.markup.links(markdown);
             markdown = specdown.markup.headers(markdown);
+            markdown = specdown.markup.horizontalRules(markdown);
             return markdown;
         },
         
@@ -584,6 +585,20 @@ var specdown = {
             markdown = markdown.replace(/\n(\#+)(?:\(\!(.*)?\))?(?:\<(.*)?\>)? ([\S ]+)/g, function(match, hashes, name, clss, content) {
                 if(name) return '\n' + buildTag(hashes.length, name, clss, content);
                 return '\n' + buildTag(hashes.length, content, clss, content);
+            });
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // --- >> <hr />
+        // *** >> <hr />
+        horizontalRules: function(markdown) {
+            // add pad to ease regex
+            markdown = '\n' + markdown + '\n';
+            // find, replace --- and ***
+            markdown = markdown.replace(/\n[-*]{3,}(?:\<(.*)?\>)?[ ]*(?=\n)/g, function(match, clss) {
+                clss = (clss) ? ' class="' + clss + '"' : '';
+                return '\n<hr' + clss + ' />';
             });
             // remove pad and return
             return markdown.substring(1, markdown.length - 1);
