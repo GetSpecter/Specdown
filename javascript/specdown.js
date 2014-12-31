@@ -83,6 +83,7 @@ var specdown = {
             markdown = specdown.markup.links(markdown);
             markdown = specdown.markup.headers(markdown);
             markdown = specdown.markup.horizontalRules(markdown);
+            markdown = specdown.markup.phraseFormattings(markdown);
             return markdown;
         },
         
@@ -602,6 +603,48 @@ var specdown = {
             });
             // remove pad and return
             return markdown.substring(1, markdown.length - 1);
+        },
+        
+        // *t*, **t**, ***t*** >> bold, strong, emphasis
+        // ~t~, ~~t~~, ~~~t~~~ >> italic, strike, mark
+        // ^t^, ^^t^^ >> superscript, subscript
+        // _t_ >> underline
+        phraseFormattings: function(markdown) {
+            // find, replace emphasis, strong, bold
+            markdown = markdown.replace(/(\*+)(?!\*)([^\s*].*?[^\s*])\1(?!\*)/g, function(match, asterisks, content) {
+                if(asterisks.length === 1) {
+                    return '<b>' + content + '</b>';
+                } else if(asterisks.length === 2) {
+                    return '<strong>' + content + '</strong>';
+                } else if(asterisks.length === 3) {
+                    return '<em>' + content + '</em>';
+                }
+                return match;
+            });
+            // find, replace mark, strike, italic
+            markdown = markdown.replace(/(\~+)(?!\~)([^\s~].*?[^\s~])\1(?!\~)/g, function(match, tildes, content) {
+                if(tildes.length === 1) {
+                    return '<i>' + content + '</i>';
+                } else if(tildes.length === 2) {
+                    return '<strike>' + content + '</strike>';
+                } else if(tildes.length === 3) {
+                    return '<mark>' + content + '</mark>';
+                }
+                return match;
+            });
+            // find, replace subscript, superscript
+            markdown = markdown.replace(/(\^+)(?!\^)([^\s^].*?[^\s^])\1(?!\^)/g, function(match, carets, content) {
+                if(carets.length === 1) {
+                    return '<sup>' + content + '</sup>';
+                } else if(carets.length === 2) {
+                    return '<sub>' + content + '</sub>';
+                }
+                return match;
+            });
+            // find, replace underline
+            markdown = markdown.replace(/\b_([^\s_].*?[^\s_])_\b/g, "<u>$1</u>");
+            //
+            return markdown;
         }
         
     },
