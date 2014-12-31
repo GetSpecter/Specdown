@@ -75,6 +75,7 @@ var specdown = {
             markdown = specdown.markup.tables(markdown);
             markdown = specdown.markup.codesSamples(markdown);
             markdown = specdown.markup.variables(markdown);
+            markdown = specdown.markup.abbreviations(markdown);
             return markdown;
         },
         
@@ -303,6 +304,23 @@ var specdown = {
             });
             //
             return markdown;
+        },
+        
+        // plus square brackets colon >> nothing
+        // matching text >> <abbr></abbr>
+        abbreviations: function(markdown, runtimeDefinitions) {
+            var def, defs = (runtimeDefinitions) ? runtimeDefinitions : {};
+            // find, cache, remove definitions
+            markdown = markdown.replace(/\+\[(.*?)\]:(.*)(\n)?/g, function(match, name, value) {
+                defs[name] = value.trim();
+                return '';
+            });
+            // find, markup usage
+            for(def in defs) {
+                markdown = markdown.replace(new RegExp('\\b' + def + '\\b', 'g'), 
+                    '<abbr title="' + specdown.util.asciiEncode(defs[def]) + '">' + def + '</abbr>');
+            }
+            return markdown;
         }
         
     },
@@ -338,6 +356,26 @@ var specdown = {
         // markup: required string
         all: function(markup) {
             return markup;
+        }
+        
+    },
+    
+    /*
+     * common functionality
+     */
+    util: {
+        
+        // ascii encode all characters matched by the regex
+        asciiEncode: function(str, regex) {
+            regex = (regex) ? regex : /([^\w\s&#;])/g;
+            return str.replace(regex, function(match, specialChar) {
+                return '&#' + specialChar.charCodeAt() + ';';
+            });
+        },
+        
+        // tokenize based on white space and quotations
+        tokenize: function(str) {
+            return str.match(/(?=""|'')|[^"']*\w(?="|')|[^"' ]+/g);
         }
         
     }
