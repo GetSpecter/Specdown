@@ -34,7 +34,7 @@ var specdown = {
     */
     config: {
         strict: false,
-        minimized: true
+        minimized: false
     },
     
     /*
