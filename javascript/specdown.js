@@ -67,7 +67,6 @@ var specdown = {
         
         // markdown: required string
         all: function(markdown) {
-            return specdown.markup.lists(markdown);
             markdown = specdown.markup.escapedChars(markdown);
             markdown = specdown.markup.comments(markdown);
             markdown = specdown.markup.metas(markdown);
