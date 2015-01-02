@@ -136,24 +136,24 @@ Header Two
 <td><a href="#nested-lists">nested lists</a></td>
 <td><pre>
 - item
-- - sub item
-- - sub item
+  - sub item
+  - sub item
 - item
-- - sub item
+  - sub item
 
 1. item
-1. 1. sub item
-1. 2. sub item
+  1. sub item
+  2. sub item
 2. item
-2. 1. sub item
+  1. sub item
 
 - item
-- 1. sub item
-- 2. sub item
+  1. sub item
+  2. sub item
 
 1. item
-1. - sub item
-1. - sub item
+  - sub item
+  - sub item
 </pre></td>
 </tr>
 
@@ -665,7 +665,6 @@ Paragraph One
 - Multiple line list items will be translated into paragraphs.
 - Lists should be followed by two or more blankish lines to signify the list end.
 - Two or more blankish lines between list items will be markuped as two seperate lists.
-- `-- `, `** `, or `++ ` can be used to signify the end of a list to prevent translation errors.
 - `<class>` is markuped on the li and cannot be used with `<<class>`.
 - `<<class>` is markuped on the ul and can only be used on the first list item.
 
@@ -729,7 +728,6 @@ With a second paragraph
 - Multiple line list items will be translated into paragraphs.
 - Lists should be followed by two or more blankish lines to signify the list end.
 - Two or more blankish lines between list items will be markuped as two seperate lists.
-- A number with `.. ` instead of `. ` can be used to signify the end of a list to prevent translation errors.
 - `<class>` is markuped on the li and cannot be used with `<<class>`.
 - `<<class>` is markuped on the ol and can only be used on the first list item.
 
@@ -782,9 +780,9 @@ With a second paragraph
 - [ ] Task 1
 - [x] Task 2
 - [ ] Task 3
-- 1. [x] Sub Task 1
-- 2. [x] Sub Task 2
-- 3. [ ] Sub Task 3
+  1. [x] Sub Task 1
+  2. [x] Sub Task 2
+  3. [ ] Sub Task 3
 ```
 ###### markup
 ```
@@ -803,8 +801,8 @@ With a second paragraph
 
 
 ### Definition Lists
-- `:` with no preceeding whitespace, will be markuped to a definition term.
-- `:` with any number of preceeding whitespaces, will be markuped to a definition definition. 
+- `:` will be markuped to a definition term.
+- `::` will be markuped to a definition definition. 
 - A term may have multiple definitions.
 - Multiple line list items will be translated into paragraphs.
 - Lists should be followed by two or more blankish lines to signify the list end.
@@ -839,6 +837,9 @@ With a second paragraph
 <p>
 Definition One
 </p>
+<p>
+With a second paragraph.
+</p>
 </dd>
 <dd>Definition Two</dd>
 </dl>
@@ -856,16 +857,19 @@ Definition One
 
 ### Nested Lists
 - All list types may be nested in each other.
+- Indention depth is dynamically sensed and applied based on first indention whitespace.
+- Indention depth is rounded up for non-multiples of first indention.
+  - Example: First indent is 2 spaces and sets the depth deliminator. An indent of 3 or 4 spaces would have a depth of 2.
 
 ###### specdown
 ```
 - Item
-- 1. One
-- 2. Two
+  1. One
+  2. Two
 - Item
-- - Sub Item
-- - 1. One
-- - 2. Two
+  - Sub Item
+    1. One
+    2. Two
 - Item
 ```
 ###### markup
