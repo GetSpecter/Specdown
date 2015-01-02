@@ -67,6 +67,7 @@ var specdown = {
         
         // markdown: required string
         all: function(markdown) {
+            return specdown.markup.lists(markdown);
             markdown = specdown.markup.escapedChars(markdown);
             markdown = specdown.markup.comments(markdown);
             markdown = specdown.markup.metas(markdown);
@@ -183,8 +184,90 @@ var specdown = {
         // #. >> <ol></ol>
         // : >> <dl></dl>
         lists: function(markdown) {
-            // TODO: everything
-            return markdown;
+            // 
+            var i, prefix, postfix, prefixes, postfixes,
+                indentLength, lastIndentLength, depth,
+                regex = /\n([\t ]*)(\d*)([-*+.:])(:?)(\<)?(?:\<(.*)?\>)? +([\s\S]*?)(?=\n[\t ]*[\d]*[-*+.:]|$)/g,
+                getPrefix = function(marker, number, def, listClss, clss) {
+                    // create the opening tags that will be cached for each level
+                    if(marker === ':') {
+                        if(def) {
+                            return '\n<dl' + listClss + '>\n<dd' + clss + '>';
+                        } else {
+                            return '\n<dl' + listClss + '>\n<dt' + clss + '>';
+                        }
+                    } else if(marker === '.') {
+                        return '\n<ol' + number + listClss + '>\n<li' + clss + '>';
+                    } else {
+                        return '\n<ul' + listClss + '>\n<li' + clss + '>';
+                    }
+                },
+                getPostfix = function(marker, def) {
+                    // create the closing tags that will be cached for each level
+                    if(marker === ':') {
+                        if(def) {
+                            return '\n</dd>\n</dl>';
+                        } else {
+                            return '\n</dt>\n</dl>';
+                        }
+                    } else if(marker === '.') {
+                        return '\n</li>\n</ol>';
+                    } else {
+                        return '\n</li>\n</ul>';
+                    }
+                },
+                processList = function(match, list) {
+                    // zero the caches for each new list
+                    prefixes = [];
+                    postfixes = [];
+                    indentLength = lastIndentLength = 0;
+                    // parse each line / item in the list
+                    list = list.replace(regex, function(match, whitespace, number, marker, def, listClss, clss, content) {
+                        // create attributes
+                        number = (number) ? ' start="' + number + '"' : '';
+                        listClss = (listClss && clss) ? ' class="' + clss + '"' : '';
+                        clss = (!listClss && clss) ? ' class="' + clss + '"' : '';
+                        // if a newline is the content put all the content on a new line
+                        // to make paragraph parsing possible
+                        content = (content.search(/\n/) > -1) ? '\n' + content : content;
+                        // if the whitespace is zero, unset the dynamic indent length delimiter
+                        // if the whitespace > zero and it wasn't on the last line, set the length delimiter
+                        if(whitespace.length === 0) {
+                            indentLength = lastIndentLength = 0;
+                        } else if(lastIndentLength === 0) {
+                            indentLength = lastIndentLength = whitespace.length;
+                        }
+                        // decide the depth the line is indented
+                        // if there is a delimiter length, depth is the whitespace over the delimiter rounded up
+                        // makes it so that whitespace of 3 with delimiter of 2 will still have a depth of 2 not 1
+                        depth = (indentLength) ? Math.ceil(whitespace.length / indentLength) : whitespace.length;
+                        // cache prefixes and postfixes
+                        prefixes[depth] = getPrefix(marker, number, def, listClss, clss);
+                        postfixes[depth] = getPostfix(marker, def);
+                        // build up the tag structure
+                        // postfixes are built in reverse order of prefixes
+                        prefix = postfix = '';
+                        for(i=0; i<=depth; i++) {
+                            prefix += (prefixes[i]) ? prefixes[i] : '\n<ul>\n<li>';
+                            postfix += (postfixes[depth - i]) ? postfixes[depth - i] : '\n</li>\n</ul>';
+                        }
+                        // return the nested list structure for a single line / item
+                        return prefix + content + postfix;
+                    });
+                    // return the entire list including many unneeded nested tags
+                    return list;
+                };
+            // add pad to ease regex
+            markdown = '\n' + markdown + '\n\n\n';
+            // find, markup an entire list
+            markdown = markdown.replace(/(\n\d*[-*+.:][:]?\<?(?:\<.*?\>)? +[\S\s]*?)(?=\n[\t ]*\n[\t ]*\n)/g, processList);
+            // clean up extra nested list tags
+            while(markdown.search(/\n<\/(ul|ol|dl)>\n<\1.*?>/) > -1) {
+                markdown = markdown.replace(/\n<\/(ul|ol|dl)>\n<\1.*?>/g, '');
+                markdown = markdown.replace(/\n?<\/(?:li|dt|dd)>\n<(?:li|dt|dd).*?>\n<((ul|ol|dl).*?)>\n/g, '\n<$1>\n');
+            }
+            // remove pad and return
+            return markdown.substring(1, markdown.length - 3);
         },
         
         // | | >> <table></table>
